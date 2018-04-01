@@ -12,10 +12,10 @@
 */
 
 $router->get('/', function () use ($router) {
-	// return "<h1>Hello world</h1>";
-	$results = DB::select("SELECT * FROM zones");
-	header('Content-Type: application/json');
-	return json_encode($results);
+	return "<h1>Hello world</h1>";
+	// $results = DB::select("SELECT * FROM zones");
+	// header('Content-Type: application/json');
+	// return json_encode($results);
     // return $router->app->version();
 });
 
@@ -31,7 +31,7 @@ $router->get('demanda/{sistema}/{zdc_id}/{fecha}', function($sistema, $zdc_id, $
 		$val = [$index, (float)$val];
 	});
 	$res = [
-		'zdc' => $zdc_id,
+		'zdc' => urldecode($zdc_id),
 		'fecha' => $fecha,
 		'data' => $test
 	];
