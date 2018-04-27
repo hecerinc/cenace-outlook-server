@@ -96,3 +96,54 @@ $router->get('precios/dump/{node_id}/{start_date}/{end_date}', function($node_id
 	return $csv_export;
 });
 
+
+// Get current demand
+$router->get('demanda/current', function() use($router) {
+	// create curl resource
+	$sistemas = [10, 1, 2];
+	$sistemaskey = ['SIN', 'BCA', 'BCS'];
+
+	$results = [];
+	foreach ($sistemas as $sistema) {
+		// set url
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, "http://www.cenace.gob.mx/GraficaDemanda.aspx/obtieneValoresTotal");
+		$data =  ['gerencia' => $sistema];
+		$data_string = json_encode($data);
+		//return the transfer as a string
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
+			'Content-Type: application/json',                                                                                
+			'Content-Length: ' . strlen($data_string))                                                                       
+		);
+
+		// $output contains the output string
+		$results[] = curl_exec($ch);
+
+		// close curl resource to free up system resources
+		curl_close($ch);
+	 	
+	}
+
+	$returnval = [];
+	foreach ($results as $key => $result) {
+		$out = json_decode($result);
+		$data = json_decode($out->d, true);
+		$hola = null; 
+		foreach ($data as $key2 => $hour) {
+			if(trim($hour['valorDemanda']) == ""){
+				$hola = $data[$key2-1]['valorDemanda'];
+				break;
+			}
+		}
+
+		$returnval[$sistemaskey[$key]] = $hola;
+
+	}
+	header('Access-Control-Allow-Origin: *');
+	header('Content-Type: application/json');
+	echo json_encode($returnval);
+
+});
