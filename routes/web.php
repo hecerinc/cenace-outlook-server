@@ -131,15 +131,21 @@ $router->get('demanda/current', function() use($router) {
 	foreach ($results as $key => $result) {
 		$out = json_decode($result);
 		$data = json_decode($out->d, true);
-		$hola = null; 
+		$current_demand = null;
+		$highest_forecast = $data[0]['valorPronostico'];
+		$found = false;
 		foreach ($data as $key2 => $hour) {
-			if(trim($hour['valorDemanda']) == ""){
-				$hola = $data[$key2-1]['valorDemanda'];
-				break;
+			if(trim($hour['valorDemanda']) == "" && !$found) {
+				$current_demand = $data[$key2-1]['valorDemanda'];
+				$found = true;
+				// break;
+			}
+			if($hour['valorPronostico'] > $highest_forecast) {
+				$highest_forecast = $hour['valorPronostico'];
 			}
 		}
 
-		$returnval[$sistemaskey[$key]] = $hola;
+		$returnval[$sistemaskey[$key]] = [$current_demand, $highest_forecast];
 
 	}
 	header('Access-Control-Allow-Origin: *');
